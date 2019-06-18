@@ -5,8 +5,12 @@ import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu
 import android.view.MenuItem
+import io.realm.RealmObject
+import io.realm.annotations.PrimaryKey
 
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.Serializable
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,13 +28,23 @@ class MainActivity : AppCompatActivity() {
         // ListViewの設定
         mTaskAdapter = TaskAdapter(this@MainActivity)
 
+        listView1.setOnItemClickListener { parent, view, position, id ->
+            // 入力・編集する画面に遷移させる
+        }
+
+        // ListViewを長押ししたときの処理
+        listView1.setOnItemLongClickListener { parent, view, position, id ->
+            // タスクを削除する
+            true
+        }
+
         reloadListView()
 
     }
 
     private fun reloadListView() {
         // 後でTaskクラスに変更する
-        val taskList = mutableListOf("aaa","bbb","ccc")
+        val taskList = mutableListOf("aaa", "bbb", "ccc")
 
         mTaskAdapter.taskList = taskList
         listView1.adapter = mTaskAdapter
@@ -52,4 +66,14 @@ class MainActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
+}
+
+open class Task : RealmObject(), Serializable {
+    var title: String = ""
+    var contents: String = ""
+    var date: Date = Date()
+
+    // id をプライマリーキーとして設定
+    @PrimaryKey
+    var id: Int = 0
 }
