@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import io.realm.Realm
@@ -54,9 +55,11 @@ class MainActivity : AppCompatActivity() {
         listView1.setOnItemClickListener { parent, view, position, id ->
             // 入力・編集する画面に遷移させる
             val task = parent.adapter.getItem(position) as Task
+            //Log.d("AAA","$task")
             val intent = Intent(this, InputActivity::class.java)
             intent.putExtra(EXTRA_TASK, task.id)
             startActivity(intent)
+            //Log.d("AAA","$intent")
         }
 
         // ListViewを長押ししたときの処理
@@ -140,7 +143,7 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_search -> true
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -155,6 +158,7 @@ class MainActivity : AppCompatActivity() {
 open class Task : RealmObject(), Serializable {
     var title: String = ""
     var contents: String = ""
+    var category:String = ""
     var date: Date = Date()
 
     // id をプライマリーキーとして設定
