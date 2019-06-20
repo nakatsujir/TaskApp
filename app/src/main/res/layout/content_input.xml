@@ -48,10 +48,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/category_add_button"/>
-        <TextView
-                android:text="testTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:id="@+id/testTextView" android:layout_weight="1"/>
+
     </LinearLayout>
 
     <Button

@@ -29,7 +29,7 @@ import kotlin.collections.ArrayList
 
 const val EXTRA_TASK = "jp.techacademy.rie.ijichi.taskapp.TASK"
 
-internal var categoryList = ArrayList<String>()
+//internal var categoryList = ArrayList<String>()
 
 class MainActivity : AppCompatActivity() {
 
@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity() {
         categoryList.add("遊び")
         categoryList.add("運動")
         val adapter = ArrayAdapter(
+            //Categoryのデータ、ArrayListで表示してるけどこれをレルムからリストとして取得したい
             applicationContext, android.R.layout.simple_spinner_item, categoryList
         )
         adapter.setDropDownViewResource(
@@ -141,10 +142,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun categorySearch() {
         val category = category_search_edit.text.toString()
-        val query = mRealm.where(Task::class.java).equalTo("category", category).findAll()
+        val query = mRealm.where(Category::class.java).equalTo("category",category).findAll()
         Log.d("AAA", "$query")
-        mTaskAdapter.taskList = mRealm.copyFromRealm(query)
-        listView1.adapter = mTaskAdapter
+//        mTaskAdapter.taskList = mRealm.copyFromRealm(query)
+//        listView1.adapter = mTaskAdapter
 
     }
 
@@ -172,8 +173,7 @@ class MainActivity : AppCompatActivity() {
 open class Task : RealmObject(), Serializable {
     var title: String = ""
     var contents: String = ""
-    //    var category:String = ""
-    var category: ArrayList<String> = categoryList
+    var category: Category? = null
     var date: Date = Date()
 
     // id をプライマリーキーとして設定

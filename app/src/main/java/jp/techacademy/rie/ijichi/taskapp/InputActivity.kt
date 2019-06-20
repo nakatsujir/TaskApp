@@ -146,9 +146,8 @@ class InputActivity : AppCompatActivity() {
             content_edit_text.setText(mTask!!.contents)
 //            spinnerSelectItem = mTask!!.category
             category_edit_text.text = spinnerSelectItem
-//            testTextView.setText(spinnerSelectItem)
 //            spinner(spinnerSelectItem)
-            Log.d("BBB","$spinnerSelectItem")
+//            Log.d("BBB","$spinnerSelectItem")
             //category_edit_text.text = spinnerSelectItem
 
             val calender = Calendar.getInstance()
@@ -184,7 +183,6 @@ class InputActivity : AppCompatActivity() {
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
         }
 
