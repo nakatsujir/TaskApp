@@ -11,6 +11,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import io.realm.Realm
 import io.realm.RealmChangeListener
 import io.realm.RealmObject
@@ -18,10 +22,14 @@ import io.realm.Sort
 import io.realm.annotations.PrimaryKey
 
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_input.*
 import java.io.Serializable
 import java.util.*
+import kotlin.collections.ArrayList
 
 const val EXTRA_TASK = "jp.techacademy.rie.ijichi.taskapp.TASK"
+
+internal var categoryList = ArrayList<String>()
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,6 +52,33 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        //spinner
+        categoryList.add("カテゴリーを選択")
+        categoryList.add("仕事")
+        categoryList.add("旅行")
+        categoryList.add("遊び")
+        categoryList.add("運動")
+        val adapter = ArrayAdapter(
+            applicationContext, android.R.layout.simple_spinner_item, categoryList
+        )
+        adapter.setDropDownViewResource(
+            android.R.layout.simple_spinner_dropdown_item
+        )
+
+        main_category_spinner.adapter = adapter
+
+        main_category_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val spinnerParent = parent as Spinner
+                val spinnerSelectItem = spinnerParent.selectedItem as String
+
+                category_search_edit.text = spinnerSelectItem
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+            }
+        }
+
         // Realmの設定
         mRealm = Realm.getDefaultInstance()
         mRealm.addChangeListener(mRealmListener)
@@ -55,11 +90,9 @@ class MainActivity : AppCompatActivity() {
         listView1.setOnItemClickListener { parent, view, position, id ->
             // 入力・編集する画面に遷移させる
             val task = parent.adapter.getItem(position) as Task
-            //Log.d("AAA","$task")
             val intent = Intent(this, InputActivity::class.java)
             intent.putExtra(EXTRA_TASK, task.id)
             startActivity(intent)
-            //Log.d("AAA","$intent")
         }
 
         // ListViewを長押ししたときの処理
@@ -90,7 +123,7 @@ class MainActivity : AppCompatActivity() {
 
                     reloadListView()
                 }
-                setNegativeButton("CANCEL",null)
+                setNegativeButton("CANCEL", null)
 
                 val dialog = create()
                 dialog.show()
@@ -98,25 +131,22 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-//        // アプリ起動時に表示テスト用のタスクを作成する
-//        addTaskForTest()
+        category_search_image.setOnClickListener {
+            categorySearch()
+        }
 
         reloadListView()
 
     }
 
-//    private fun addTaskForTest() {
-//        val task = Task().apply {
-//            title = "作業"
-//            contents = "プログラムを書いてPUSHする"
-//            date = Date()
-//            id = 0
-//        }
-//        mRealm.beginTransaction()
-//        mRealm.copyToRealmOrUpdate(task)
-//        mRealm.commitTransaction()
-//
-//    }
+    private fun categorySearch() {
+        val category = category_search_edit.text.toString()
+        val query = mRealm.where(Task::class.java).equalTo("category", category).findAll()
+        Log.d("AAA", "$query")
+        mTaskAdapter.taskList = mRealm.copyFromRealm(query)
+        listView1.adapter = mTaskAdapter
+
+    }
 
     private fun reloadListView() {
         // Realmデータベースから、「全てのデータを取得して新しい日時順に並べた結果」を取得
@@ -132,22 +162,6 @@ class MainActivity : AppCompatActivity() {
         mTaskAdapter.notifyDataSetChanged()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_search -> true
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
     override fun onDestroy() {
         super.onDestroy()
 
@@ -158,7 +172,8 @@ class MainActivity : AppCompatActivity() {
 open class Task : RealmObject(), Serializable {
     var title: String = ""
     var contents: String = ""
-    var category:String = ""
+    //    var category:String = ""
+    var category: ArrayList<String> = categoryList
     var date: Date = Date()
 
     // id をプライマリーキーとして設定

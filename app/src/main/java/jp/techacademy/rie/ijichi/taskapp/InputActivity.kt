@@ -9,6 +9,9 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import io.realm.Realm
 import kotlinx.android.synthetic.main.content_input.*
 import java.util.*
@@ -22,6 +25,7 @@ class InputActivity : AppCompatActivity() {
     private var mMinute = 0
     private var mTask: Task? = null
 
+    private var spinnerSelectItem = ""
 
     private val mOnDateClickListener = View.OnClickListener {
         val datePickerDialog = DatePickerDialog(
@@ -70,21 +74,21 @@ class InputActivity : AppCompatActivity() {
 
             val identifier: Int =
                 if (taskRealmResults.max("id") != null) {
-                taskRealmResults.max("id")!!.toInt() + 1
-            }else{
-                0
-            }
+                    taskRealmResults.max("id")!!.toInt() + 1
+                } else {
+                    0
+                }
             mTask!!.id = identifier
         }
 
         val title = title_edit_text.text.toString()
-        val content =  content_edit_text.text.toString()
+        val content = content_edit_text.text.toString()
         val category = category_edit_text.text.toString()
 
         mTask!!.title = title
         mTask!!.contents = content
-        mTask!!.category = category
-        val calender = GregorianCalendar(mYear,mMonth,mDay,mHour,mMinute)
+//        mTask!!.category = category
+        val calender = GregorianCalendar(mYear, mMonth, mDay, mHour, mMinute)
         val date = calender.time
         mTask!!.date = date
 
@@ -93,8 +97,8 @@ class InputActivity : AppCompatActivity() {
 
         realm.close()
 
-        val resultIntent = Intent(applicationContext,TaskAlarmReceiver::class.java)
-        resultIntent.putExtra(EXTRA_TASK,mTask!!.id)
+        val resultIntent = Intent(applicationContext, TaskAlarmReceiver::class.java)
+        resultIntent.putExtra(EXTRA_TASK, mTask!!.id)
         val resultPendingIntent = PendingIntent.getBroadcast(
             this,
             mTask!!.id,
@@ -102,7 +106,7 @@ class InputActivity : AppCompatActivity() {
             PendingIntent.FLAG_UPDATE_CURRENT
         )
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-        alarmManager.set(AlarmManager.RTC_WAKEUP,calender.timeInMillis,resultPendingIntent)
+        alarmManager.set(AlarmManager.RTC_WAKEUP, calender.timeInMillis, resultPendingIntent)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -140,7 +144,12 @@ class InputActivity : AppCompatActivity() {
             // 更新の場合
             title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
-            category_edit_text.setText(mTask!!.category)
+//            spinnerSelectItem = mTask!!.category
+            category_edit_text.text = spinnerSelectItem
+//            testTextView.setText(spinnerSelectItem)
+//            spinner(spinnerSelectItem)
+            Log.d("BBB","$spinnerSelectItem")
+            //category_edit_text.text = spinnerSelectItem
 
             val calender = Calendar.getInstance()
             calender.time = mTask!!.date
@@ -156,10 +165,37 @@ class InputActivity : AppCompatActivity() {
 
             date_button.text = dateString
             times_button.text = timeString
-
-
         }
+
+        //spinner
+        val adapter = ArrayAdapter(
+            applicationContext, android.R.layout.simple_spinner_item, categoryList)
+        adapter.setDropDownViewResource(
+            android.R.layout.simple_spinner_dropdown_item)
+
+        category_spinner.adapter = adapter
+
+        category_spinner.onItemSelectedListener = object :AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val spinnerParent = parent as Spinner
+                spinnerSelectItem = spinnerParent.selectedItem as String
+
+                category_edit_text.text = spinnerSelectItem
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+        }
+
+        category_add_button.setOnClickListener {
+            val intent = Intent(this,CategoryActivity::class.java)
+            startActivity(intent)
+        }
+
     }
+
+
 
 
 }
