@@ -25,7 +25,7 @@ class InputActivity : AppCompatActivity() {
     private var mMinute = 0
     private var mTask: Task? = null
 
-    private var spinnerSelectItem = ""
+//    private var spinnerSelectItem = ""
 
     private val mOnDateClickListener = View.OnClickListener {
         val datePickerDialog = DatePickerDialog(
@@ -87,7 +87,7 @@ class InputActivity : AppCompatActivity() {
 
         mTask!!.title = title
         mTask!!.contents = content
-//        mTask!!.category = category
+//        mTask!!.category!!.map { it.name }.toString() = category
         val calender = GregorianCalendar(mYear, mMonth, mDay, mHour, mMinute)
         val date = calender.time
         mTask!!.date = date
@@ -145,10 +145,10 @@ class InputActivity : AppCompatActivity() {
             title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
 //            spinnerSelectItem = mTask!!.category
-            category_edit_text.text = spinnerSelectItem
+            val c = mTask!!.category!!.map { it.name }.toString()
+            category_edit_text.text = mTask!!.category!!.map { it.name }.toString()
 //            spinner(spinnerSelectItem)
-//            Log.d("BBB","$spinnerSelectItem")
-            //category_edit_text.text = spinnerSelectItem
+            Log.d("BBB","$c")
 
             val calender = Calendar.getInstance()
             calender.time = mTask!!.date
@@ -171,7 +171,7 @@ class InputActivity : AppCompatActivity() {
         val categoryList = realm.copyFromRealm(result)
 
         val adapter = ArrayAdapter(
-            applicationContext, android.R.layout.simple_spinner_item, categoryList)
+            applicationContext, android.R.layout.simple_spinner_item, categoryList.map { it.name })
         adapter.setDropDownViewResource(
             android.R.layout.simple_spinner_dropdown_item)
 
@@ -180,7 +180,7 @@ class InputActivity : AppCompatActivity() {
         category_spinner.onItemSelectedListener = object :AdapterView.OnItemSelectedListener{
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val spinnerParent = parent as Spinner
-                spinnerSelectItem = spinnerParent.selectedItem as String
+                val spinnerSelectItem = spinnerParent.selectedItem as String
 
                 category_edit_text.text = spinnerSelectItem
             }

@@ -54,7 +54,7 @@ class CategoryActivity : AppCompatActivity() {
         mRealm.beginTransaction()
         val newCategory = Category()
         val categoryCreate = category_create_edit.text.toString()
-        newCategory.category = categoryCreate
+        newCategory.name = categoryCreate
         val categoryRealmResults = mRealm.where(Category::class.java).findAll()
         val identifier:Int =
             if (categoryRealmResults.max("id") != null){

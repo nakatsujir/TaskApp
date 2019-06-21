@@ -15,10 +15,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
-import io.realm.Realm
-import io.realm.RealmChangeListener
-import io.realm.RealmObject
-import io.realm.Sort
+import io.realm.*
 import io.realm.annotations.PrimaryKey
 
 import kotlinx.android.synthetic.main.activity_main.*
@@ -28,8 +25,6 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 const val EXTRA_TASK = "jp.techacademy.rie.ijichi.taskapp.TASK"
-
-//internal var categoryList = ArrayList<String>()
 
 class MainActivity : AppCompatActivity() {
 
@@ -47,24 +42,23 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Realmの設定
+        mRealm = Realm.getDefaultInstance()
+        mRealm.addChangeListener(mRealmListener)
+
         fab.setOnClickListener { view ->
             val intent = Intent(this, InputActivity::class.java)
             startActivity(intent)
         }
 
         //spinner
-//        categoryList.add("カテゴリーを選択")
-//        categoryList.add("仕事")
-//        categoryList.add("旅行")
-//        categoryList.add("遊び")
-//        categoryList.add("運動")
-        //val category = parent.adapter.getItem(position) as ArrayList<String>
+        //realmに保存されているカテゴリーを抽出する。
         val result = mRealm.where(Category::class.java).findAll()
         val categoryList = mRealm.copyFromRealm(result)
 
         val adapter = ArrayAdapter(
-            //Categoryのデータ、ArrayListで表示してるけどこれをレルムからリストとして取得したい
-            applicationContext, android.R.layout.simple_spinner_item, categoryList
+            //抽出してきたCategoryのデータをセット
+            applicationContext, android.R.layout.simple_spinner_item, categoryList.map { it.name }
         )
         adapter.setDropDownViewResource(
             android.R.layout.simple_spinner_dropdown_item
@@ -83,11 +77,6 @@ class MainActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {
             }
         }
-
-        // Realmの設定
-        mRealm = Realm.getDefaultInstance()
-        mRealm.addChangeListener(mRealmListener)
-
 
         // ListViewの設定
         mTaskAdapter = TaskAdapter(this@MainActivity)
@@ -146,11 +135,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun categorySearch() {
         val category = category_search_edit.text.toString()
-        val query = mRealm.where(Category::class.java).equalTo("category",category).findAll()
+        //Taskクラスからcategory_search_editに記載したのと一致するものを探す
+        val query = mRealm.where(Task::class.java).equalTo("category.name",category).findAll()
         Log.d("AAA", "$query")
-//        mTaskAdapter.taskList = mRealm.copyFromRealm(query)
-//        listView1.adapter = mTaskAdapter
-
+        mTaskAdapter.taskList = mRealm.copyFromRealm(query)
+        listView1.adapter = mTaskAdapter
     }
 
     private fun reloadListView() {
@@ -177,7 +166,7 @@ class MainActivity : AppCompatActivity() {
 open class Task : RealmObject(), Serializable {
     var title: String = ""
     var contents: String = ""
-    var category: Category? = null
+    var category: RealmList<Category>? = null
     var date: Date = Date()
 
     // id をプライマリーキーとして設定
