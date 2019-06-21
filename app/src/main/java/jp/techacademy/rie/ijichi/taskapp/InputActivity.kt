@@ -167,6 +167,9 @@ class InputActivity : AppCompatActivity() {
         }
 
         //spinner
+        val result = realm.where(Category::class.java).findAll()
+        val categoryList = realm.copyFromRealm(result)
+
         val adapter = ArrayAdapter(
             applicationContext, android.R.layout.simple_spinner_item, categoryList)
         adapter.setDropDownViewResource(

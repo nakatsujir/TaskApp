@@ -53,11 +53,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         //spinner
-        categoryList.add("カテゴリーを選択")
-        categoryList.add("仕事")
-        categoryList.add("旅行")
-        categoryList.add("遊び")
-        categoryList.add("運動")
+//        categoryList.add("カテゴリーを選択")
+//        categoryList.add("仕事")
+//        categoryList.add("旅行")
+//        categoryList.add("遊び")
+//        categoryList.add("運動")
+        //val category = parent.adapter.getItem(position) as ArrayList<String>
+        val result = mRealm.where(Category::class.java).findAll()
+        val categoryList = mRealm.copyFromRealm(result)
+
         val adapter = ArrayAdapter(
             //Categoryのデータ、ArrayListで表示してるけどこれをレルムからリストとして取得したい
             applicationContext, android.R.layout.simple_spinner_item, categoryList
