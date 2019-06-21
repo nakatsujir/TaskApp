@@ -13,6 +13,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import io.realm.Realm
+import io.realm.RealmList
 import kotlinx.android.synthetic.main.content_input.*
 import java.util.*
 
@@ -25,7 +26,7 @@ class InputActivity : AppCompatActivity() {
     private var mMinute = 0
     private var mTask: Task? = null
 
-//    private var spinnerSelectItem = ""
+    lateinit var s:Category
 
     private val mOnDateClickListener = View.OnClickListener {
         val datePickerDialog = DatePickerDialog(
@@ -87,7 +88,7 @@ class InputActivity : AppCompatActivity() {
 
         mTask!!.title = title
         mTask!!.contents = content
-//        mTask!!.category!!.map { it.name }.toString() = category
+        mTask!!.category = s
         val calender = GregorianCalendar(mYear, mMonth, mDay, mHour, mMinute)
         val date = calender.time
         mTask!!.date = date
@@ -148,7 +149,6 @@ class InputActivity : AppCompatActivity() {
             val c = mTask!!.category!!.map { it.name }.toString()
             category_edit_text.text = mTask!!.category!!.map { it.name }.toString()
 //            spinner(spinnerSelectItem)
-            Log.d("BBB","$c")
 
             val calender = Calendar.getInstance()
             calender.time = mTask!!.date
@@ -181,6 +181,11 @@ class InputActivity : AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val spinnerParent = parent as Spinner
                 val spinnerSelectItem = spinnerParent.selectedItem as String
+                val spinnerSelectItemIndex = spinnerParent.getSelectedItemPosition()
+                val c = categoryList
+                s = c[spinnerSelectItemIndex]
+                Log.d("CCC","$spinnerSelectItem:$spinnerSelectItemIndex")
+                Log.d("CCC","M:$s")
 
                 category_edit_text.text = spinnerSelectItem
             }
