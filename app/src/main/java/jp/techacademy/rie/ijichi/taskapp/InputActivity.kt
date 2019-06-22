@@ -26,7 +26,7 @@ class InputActivity : AppCompatActivity() {
     private var mMinute = 0
     private var mTask: Task? = null
 
-    lateinit var s:Category
+    private lateinit var mRealm: Realm
 
     private val mOnDateClickListener = View.OnClickListener {
         val datePickerDialog = DatePickerDialog(
@@ -62,6 +62,70 @@ class InputActivity : AppCompatActivity() {
         finish()
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_input)
+
+        // ActionBarを設定する
+        val toolbar = findViewById<View>(R.id.toolbar) as android.support.v7.widget.Toolbar
+        setSupportActionBar(toolbar)
+        if (supportActionBar != null) {
+            supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        }
+
+        // UI部品の設定
+        date_button.setOnClickListener(mOnDateClickListener)
+        times_button.setOnClickListener(mOnTimeClickListener)
+        done_button.setOnClickListener(mOnDoneClickListener)
+
+        // EXTRA_TASK から Task の id を取得して、 id から Task のインスタンスを取得する
+        val intent = intent
+        val taskId = intent.getIntExtra(EXTRA_TASK, -1)
+        mRealm = Realm.getDefaultInstance()
+        mTask = mRealm.where(Task::class.java).equalTo("id", taskId).findFirst()
+        mRealm.close()
+
+        if (mTask == null) {
+            // 新規作成の場合
+            val calender = Calendar.getInstance()
+            mYear = calender.get(Calendar.YEAR)
+            mMonth = calender.get(Calendar.MONTH)
+            mDay = calender.get(Calendar.DAY_OF_MONTH)
+            mHour = calender.get(Calendar.HOUR_OF_DAY)
+            mMinute = calender.get(Calendar.MINUTE)
+        } else {
+            // 更新の場合
+            title_edit_text.setText(mTask!!.title)
+            content_edit_text.setText(mTask!!.contents)
+
+            val calender = Calendar.getInstance()
+            calender.time = mTask!!.date
+            mYear = calender.get(Calendar.YEAR)
+            mMonth = calender.get(Calendar.MONTH)
+            mDay = calender.get(Calendar.DAY_OF_MONTH)
+            mHour = calender.get(Calendar.HOUR_OF_DAY)
+            mMinute = calender.get(Calendar.MINUTE)
+
+            val dateString =
+                mYear.toString() + "/" + String.format("%02d", mMonth + 1) + "/" + String.format("%02d", mDay)
+            val timeString = String.format("%02d", mHour) + ":" + String.format("%02d", mMinute)
+
+            date_button.text = dateString
+            times_button.text = timeString
+        }
+
+        category_add_button.setOnClickListener {
+            val intent = Intent(this,CategoryActivity::class.java)
+            startActivity(intent)
+        }
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        showSpinner()
+    }
+
     private fun addTask() {
         val realm = Realm.getDefaultInstance()
 
@@ -84,11 +148,13 @@ class InputActivity : AppCompatActivity() {
 
         val title = title_edit_text.text.toString()
         val content = content_edit_text.text.toString()
-        val category = category_edit_text.text.toString()
+        val result = realm.where(Category::class.java).findAll()
+        val categoryList = realm.copyFromRealm(result)
 
         mTask!!.title = title
         mTask!!.contents = content
-        mTask!!.category = s
+        //カテゴリー選択された項目のindexをとってきている
+        mTask!!.category = categoryList[category_spinner.selectedItemPosition]
         val calender = GregorianCalendar(mYear, mMonth, mDay, mHour, mMinute)
         val date = calender.time
         mTask!!.date = date
@@ -110,65 +176,9 @@ class InputActivity : AppCompatActivity() {
         alarmManager.set(AlarmManager.RTC_WAKEUP, calender.timeInMillis, resultPendingIntent)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_input)
-
-        // ActionBarを設定する
-        val toolbar = findViewById<View>(R.id.toolbar) as android.support.v7.widget.Toolbar
-        setSupportActionBar(toolbar)
-        if (supportActionBar != null) {
-            supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        }
-
-        // UI部品の設定
-        date_button.setOnClickListener(mOnDateClickListener)
-        times_button.setOnClickListener(mOnTimeClickListener)
-        done_button.setOnClickListener(mOnDoneClickListener)
-
-        // EXTRA_TASK から Task の id を取得して、 id から Task のインスタンスを取得する
-        val intent = intent
-        val taskId = intent.getIntExtra(EXTRA_TASK, -1)
-        val realm = Realm.getDefaultInstance()
-        mTask = realm.where(Task::class.java).equalTo("id", taskId).findFirst()
-        realm.close()
-
-        if (mTask == null) {
-            // 新規作成の場合
-            val calender = Calendar.getInstance()
-            mYear = calender.get(Calendar.YEAR)
-            mMonth = calender.get(Calendar.MONTH)
-            mDay = calender.get(Calendar.DAY_OF_MONTH)
-            mHour = calender.get(Calendar.HOUR_OF_DAY)
-            mMinute = calender.get(Calendar.MINUTE)
-        } else {
-            // 更新の場合
-            title_edit_text.setText(mTask!!.title)
-            content_edit_text.setText(mTask!!.contents)
-//            spinnerSelectItem = mTask!!.category
-            val c = mTask!!.category!!.map { it.name }.toString()
-            category_edit_text.text = mTask!!.category!!.map { it.name }.toString()
-//            spinner(spinnerSelectItem)
-
-            val calender = Calendar.getInstance()
-            calender.time = mTask!!.date
-            mYear = calender.get(Calendar.YEAR)
-            mMonth = calender.get(Calendar.MONTH)
-            mDay = calender.get(Calendar.DAY_OF_MONTH)
-            mHour = calender.get(Calendar.HOUR_OF_DAY)
-            mMinute = calender.get(Calendar.MINUTE)
-
-            val dateString =
-                mYear.toString() + "/" + String.format("%02d", mMonth + 1) + "/" + String.format("%02d", mDay)
-            val timeString = String.format("%02d", mHour) + ":" + String.format("%02d", mMinute)
-
-            date_button.text = dateString
-            times_button.text = timeString
-        }
-
-        //spinner
-        val result = realm.where(Category::class.java).findAll()
-        val categoryList = realm.copyFromRealm(result)
+    private fun showSpinner(){
+        val result = mRealm.where(Category::class.java).findAll()
+        val categoryList = mRealm.copyFromRealm(result)
 
         val adapter = ArrayAdapter(
             applicationContext, android.R.layout.simple_spinner_item, categoryList.map { it.name })
@@ -181,11 +191,6 @@ class InputActivity : AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val spinnerParent = parent as Spinner
                 val spinnerSelectItem = spinnerParent.selectedItem as String
-                val spinnerSelectItemIndex = spinnerParent.getSelectedItemPosition()
-                val c = categoryList
-                s = c[spinnerSelectItemIndex]
-                Log.d("CCC","$spinnerSelectItem:$spinnerSelectItemIndex")
-                Log.d("CCC","M:$s")
 
                 category_edit_text.text = spinnerSelectItem
             }
@@ -193,12 +198,6 @@ class InputActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {
             }
         }
-
-        category_add_button.setOnClickListener {
-            val intent = Intent(this,CategoryActivity::class.java)
-            startActivity(intent)
-        }
-
     }
 
 

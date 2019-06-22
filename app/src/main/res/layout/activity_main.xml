@@ -17,6 +17,13 @@
                 android:layout_gravity="center"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
+            <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:text="全て表示"
+                    android:textSize="10sp"
+                    android:id="@+id/category_show_all_button"/>
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

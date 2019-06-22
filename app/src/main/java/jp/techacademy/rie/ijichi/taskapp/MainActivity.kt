@@ -51,33 +51,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        //spinner
-        //realmに保存されているカテゴリーを抽出する。
-        val result = mRealm.where(Category::class.java).findAll()
-        val categoryList = mRealm.copyFromRealm(result)
-
-        val adapter = ArrayAdapter(
-            //抽出してきたCategoryのデータをセット
-            applicationContext, android.R.layout.simple_spinner_item, categoryList.map { it.name }
-        )
-        adapter.setDropDownViewResource(
-            android.R.layout.simple_spinner_dropdown_item
-        )
-
-        main_category_spinner.adapter = adapter
-
-        main_category_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val spinnerParent = parent as Spinner
-                val spinnerSelectItem = spinnerParent.selectedItem as String
-
-                category_search_edit.text = spinnerSelectItem
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-            }
-        }
-
         // ListViewの設定
         mTaskAdapter = TaskAdapter(this@MainActivity)
 
@@ -131,13 +104,27 @@ class MainActivity : AppCompatActivity() {
 
         reloadListView()
 
+        category_show_all_button.setOnClickListener {
+            reloadListView()
+        }
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        showSpinner()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        mRealm.close()
     }
 
     private fun categorySearch() {
         val category = category_search_edit.text.toString()
         //Taskクラスからcategory_search_editに記載したのと一致するものを探す
         val query = mRealm.where(Task::class.java).equalTo("category.name",category).findAll()
-        Log.d("AAA", "$query")
         mTaskAdapter.taskList = mRealm.copyFromRealm(query)
         listView1.adapter = mTaskAdapter
     }
@@ -156,20 +143,32 @@ class MainActivity : AppCompatActivity() {
         mTaskAdapter.notifyDataSetChanged()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    private fun showSpinner(){
+        //spinner
+        //realmに保存されているカテゴリーを抽出する。
+        val result = mRealm.where(Category::class.java).findAll()
+        val categoryList = mRealm.copyFromRealm(result)
 
-        mRealm.close()
+        val adapter = ArrayAdapter(
+            //抽出してきたCategoryのデータをセット
+            applicationContext, android.R.layout.simple_spinner_item, categoryList.map { it.name }
+        )
+        adapter.setDropDownViewResource(
+            android.R.layout.simple_spinner_dropdown_item
+        )
+
+        main_category_spinner.adapter = adapter
+
+        main_category_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val spinnerParent = parent as Spinner
+                val spinnerSelectItem = spinnerParent.selectedItem as String
+
+                category_search_edit.text = spinnerSelectItem
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+            }
+        }
     }
-}
-
-open class Task : RealmObject(), Serializable {
-    var title: String = ""
-    var contents: String = ""
-    var category: RealmList<Category>? = null
-    var date: Date = Date()
-
-    // id をプライマリーキーとして設定
-    @PrimaryKey
-    var id: Int = 0
 }
