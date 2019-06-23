@@ -42,7 +42,7 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"/>
         <Button
-                android:text="カテゴリーを追加"
+                android:text="カテゴリを追加"
                 android:layout_marginLeft="10dp"
                 android:textSize="10dp"
                 android:layout_width="wrap_content"

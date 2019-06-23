@@ -12,6 +12,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.Toast
 import io.realm.Realm
 import io.realm.RealmList
 import kotlinx.android.synthetic.main.content_input.*
@@ -136,7 +137,6 @@ class InputActivity : AppCompatActivity() {
             mTask = Task()
 
             val taskRealmResults = realm.where(Task::class.java).findAll()
-
             val identifier: Int =
                 if (taskRealmResults.max("id") != null) {
                     taskRealmResults.max("id")!!.toInt() + 1
@@ -154,7 +154,11 @@ class InputActivity : AppCompatActivity() {
         mTask!!.title = title
         mTask!!.contents = content
         //カテゴリー選択された項目のindexをとってきている
-        mTask!!.category = categoryList[category_spinner.selectedItemPosition]
+        if (mTask!!.category == null){
+            Toast.makeText(applicationContext, "カテゴリを追加でカテゴリの新規作成ができます。", Toast.LENGTH_SHORT).show()
+        }else{
+            mTask!!.category = categoryList[category_spinner.selectedItemPosition]
+        }
         val calender = GregorianCalendar(mYear, mMonth, mDay, mHour, mMinute)
         val date = calender.time
         mTask!!.date = date
@@ -199,8 +203,4 @@ class InputActivity : AppCompatActivity() {
             }
         }
     }
-
-
-
-
 }
